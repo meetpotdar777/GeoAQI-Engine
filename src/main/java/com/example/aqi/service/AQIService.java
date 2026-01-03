@@ -9,7 +9,7 @@ import java.util.Map;
 public class AQIService {
 
     // IMPORTANT: Replace with your actual token from https://aqicn.org/api/
-    private final String API_TOKEN = "1abce20e9689dd1a23def87a33702fd2dc841766"; 
+    private final String API_TOKEN = "YOUR_API_TOKEN"; 
     private final String BASE_URL = "https://api.waqi.info/feed/geo:";
 
     public Map<String, Object> getAqiData(double lat, double lng) {
