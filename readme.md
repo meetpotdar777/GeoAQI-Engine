@@ -87,7 +87,7 @@ The application follows the WHO Global Standards:
 Meet Potdar, Full-Stack Developer
 
 <p align="center">
-  <img src="screenshot.png" width="600" title="GeoAQI Engine">
+  <img src="Screenshot.png" width="600" title="GeoAQI Engine">
 </p>
 
 ---
