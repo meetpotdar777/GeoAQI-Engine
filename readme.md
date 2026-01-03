@@ -83,11 +83,19 @@ The application follows the WHO Global Standards:
 
 ---
 
+---
+
 ## 👨‍💻 Author
-Meet Potdar, Full-Stack Developer
+
+**Meet Potdar**
+*Full-Stack Developer*
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/meet-potdar-04b12b290?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
+
 
 <p align="center">
   <img src="Screenshot.png" width="600" title="GeoAQI Engine">
 </p>
 
 ---
+*Built with ❤️ using Spring Boot and Leaflet.js*
