@@ -2,6 +2,7 @@
 
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)
 
 **GeoAQI Engine** is a full-stack Java application that provides real-time Air Quality Index (AQI) data for any location on Earth. Built with **Spring Boot** and **Leaflet.js**, it features an interactive map where users can search for cities, locate themselves via GPS, and view detailed environmental health data.
 
