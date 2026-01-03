@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoAQI Engine - Ultimate Edition</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; }
+        #map { height: 100vh; width: 100%; }
+        
+        .info-box {
+            position: absolute; top: 10px; left: 55px; z-index: 1000;
+            background: rgba(255, 255, 255, 0.9); padding: 12px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); max-width: 220px;
+        }
+
+        /* --- LOCATE ME BUTTON STYLE --- */
+        .locate-button {
+            position: absolute; top: 100px; left: 10px; z-index: 1000;
+            background: white; width: 34px; height: 34px;
+            border: 2px solid rgba(0,0,0,0.2); border-radius: 4px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; background-clip: padding-box;
+        }
+        .locate-button:hover { background-color: #f4f4f4; }
+        
+        .aqi-value { font-size: 28px; font-weight: bold; display: block; margin: 5px 0; }
+
+        .legend {
+            background: white; padding: 10px; line-height: 22px;
+            color: #333; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.2); font-size: 12px;
+        }
+        .legend i { width: 18px; height: 18px; float: left; margin-right: 8px; opacity: 0.9; border: 1px solid #777; }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px;
+            border-radius: 50%; border-left-color: #09f;
+            animation: spin 1s ease infinite; margin: 10px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="info-box">
+    <h3 style="margin:0 0 5px 0;">GeoAQI Engine</h3>
+    <small>Real-time Global Air Quality</small>
+</div>
+
+<div class="locate-button" onclick="locateUser()" title="Find My Location">📍</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<script>
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' });
+    const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Esri' });
+
+    const map = L.map('map', { center: [20.5937, 78.9629], zoom: 5, layers: [osm] });
+    L.control.layers({"Street": osm, "Satellite": satellite}).addTo(map);
+    L.Control.geocoder({ defaultMarkGeocode: false }).on('markgeocode', e => map.setView(e.geocode.center, 12)).addTo(map);
+
+    function getAqiColor(aqi) {
+        if (aqi <= 50) return "#00e400"; 
+        if (aqi <= 100) return "#ffff00"; 
+        if (aqi <= 150) return "#ff7e00"; 
+        if (aqi <= 200) return "#ff0000"; 
+        if (aqi <= 300) return "#8f3f97"; 
+        return "#7e0023"; 
+    }
+
+    // Main Function to Fetch Data
+    function fetchAQI(lat, lng) {
+        const popup = L.popup()
+            .setLatLng([lat, lng])
+            .setContent('<div style="text-align:center;"><div class="spinner"></div><p>Fetching Air Quality...</p></div>')
+            .openOn(map);
+
+        fetch(`/api/aqi?lat=${lat}&lng=${lng}`)
+            .then(res => res.json())
+            .then(json => {
+                if (json.status === "ok") {
+                    const data = json.data;
+                    const color = getAqiColor(data.aqi);
+                    popup.setContent(`
+                        <div style="text-align: center; min-width: 150px;">
+                            <b>${data.city.name}</b><br>
+                            <span class="aqi-value" style="color: ${color}">${data.aqi}</span>
+                            <div style="background: ${color}; height: 6px; width: 100%; border-radius: 3px; margin-bottom: 5px;"></div>
+                            <small>Station: ${data.attributions[0].name.substring(0,20)}...</small>
+                        </div>
+                    `);
+                } else {
+                    popup.setContent("No station found here.");
+                }
+            })
+            .catch(() => popup.setContent("Error connecting to backend."));
+    }
+
+    // CLICK ON MAP
+    map.on('click', e => fetchAQI(e.latlng.lat, e.latlng.lng));
+
+    // LOCATE USER FUNCTION
+    function locateUser() {
+        if (!navigator.geolocation) {
+            alert("Geolocation is not supported by your browser");
+            return;
+        }
+        
+        navigator.geolocation.getCurrentPosition((position) => {
+            const { latitude, longitude } = position.coords;
+            map.setView([latitude, longitude], 13);
+            fetchAQI(latitude, longitude);
+        }, () => {
+            alert("Unable to retrieve your location. Check browser permissions.");
+        });
+    }
+    
+    // Legend Code
+    var legend = L.control({position: 'bottomright'});
+    legend.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'info legend'),
+            colors = ["#00e400", "#ffff00", "#ff7e00", "#ff0000", "#8f3f97", "#7e0023"],
+            labels = ["Good", "Moderate", "Sensitive", "Unhealthy", "V. Unhealthy", "Hazardous"];
+        div.innerHTML = "<strong>AQI Risk Scale</strong><br>";
+        for (var i = 0; i < colors.length; i++) {
+            div.innerHTML += '<i style="background:' + colors[i] + '"></i> ' + labels[i] + '<br>';
+        }
+        return div;
+    };
+    legend.addTo(map);
+</script>
+</body>
+</html>
