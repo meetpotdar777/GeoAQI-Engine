@@ -58,7 +58,7 @@ GeoAQI-Engine/
 ```bash
 mvn clean install
 mvn spring-boot:run
-mvn clean install
+
 ```
 
 4. Open your browser and visit: http://localhost:8080
